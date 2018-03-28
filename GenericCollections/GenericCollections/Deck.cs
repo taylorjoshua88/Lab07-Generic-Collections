@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,7 +13,7 @@ namespace GenericCollections
     /// </summary>
     /// <typeparam name="T">The type of items that can be held
     /// by this collection</typeparam>
-    public class Deck<T>
+    public class Deck<T> : IEnumerable
     {
         // Backing array storage for the Deck collection's items
         private T[] items;
@@ -252,5 +253,27 @@ namespace GenericCollections
                 SwapItems(curIndex, random.Next(Length));
             }
         }
+
+        /// <summary>
+        /// Returns an IEnumerator for type <typeparamref name="T"/>
+        /// </summary>
+        /// <returns>An IEnumerator for type <typeparamref name="T"/>
+        /// </returns>
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (int itemIdx = 0; itemIdx < Length; itemIdx++)
+            {
+                yield return items[itemIdx];
+            }
+        }
+
+        /// <summary>
+        /// Returns a non-generic IEnumerator for collection initializers
+        /// </summary>
+        /// <returns>An IEnumerator object for this class</returns>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        } 
     }
 }
