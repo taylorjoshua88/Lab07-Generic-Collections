@@ -4,10 +4,22 @@ using System.Text;
 
 namespace GenericCollections
 {
+    /// <summary>
+    /// Generic collection holding values of type T. The capacity
+    /// of this collection will expand and shrink as its length
+    /// surpasses capacity or is reduced below a critical value
+    /// associated with ResizeFactor.
+    /// </summary>
+    /// <typeparam name="T">The type of items that can be held
+    /// by this collection</typeparam>
     public class Deck<T>
     {
+        // Backing array storage for the Deck collection's items
         private T[] items;
 
+        /// <summary>
+        /// The number of items currently being managed by this collection
+        /// </summary>
         public int Length { get; private set; } = 0;
 
         /// <summary>
@@ -25,21 +37,26 @@ namespace GenericCollections
             }
         }
 
+        // Backing store for ResizeFactor property
+        private int _resizeFactor = 2;
+
         /// <summary>
         /// The factor by which this collection's capacity expands
         /// and shrinks in response to items being removed or added
         /// to the collection. ResizeFactor must be greater than 1.
         /// </summary>
-        private int _resizeFactor = 2;
         public int ResizeFactor {
             get {
                 return _resizeFactor;
             }
             set {
-                if (_resizeFactor < 1)
+                // Prevents the entire collection being dropped when Expand() and
+                // Shrink() are called, negative Capacity values, or the inability
+                // for the collection's Capacity to be resized with values of 1
+                if (_resizeFactor <= 1)
                 {
                     throw new ArgumentOutOfRangeException(
-                        "ResizeFactor must be greater than 1.", nameof(value));
+                        "ResizeFactor must be greater than 1", nameof(value));
                 }
 
                 _resizeFactor = value;
@@ -176,9 +193,9 @@ namespace GenericCollections
              *  NOTE(taylorjoshua88):
              *    If the ordering of our collection were not important,
              *    the following would be far more efficient than having
-             *    to shift all items up in the collection. Decks should
-             *    not have their ordering affected unless they are
-             *    shuffled though, so we cannot use this:
+             *    to shift all items up in the collection {O(1) vs. O(n)}
+             *    Decks should not have their ordering affected unless
+             *    they are shuffled though, so we cannot use this:
              *
              *    items[removedItemIdx] = items[--Length];
             */
@@ -193,7 +210,7 @@ namespace GenericCollections
             // If our new Length is less than Capacity / (2 * ResizeFactor) then
             // shrink our Capacity to Capacity / ResizeFactor. Making this condition
             // triggered by Capacity / (2 * ResizeFactor) will help prevent Capacity
-            // being thrashed around if adding and removing at a critical value
+            // being thrashed around if adding and removing items at a critical value
             if (--Length < Capacity / (2 * ResizeFactor))
             {
                 Shrink();
