@@ -37,7 +37,7 @@ which is included in the test project as a NuGet dependency.
 
 ## Example
 
-#### Interface Demonstration Screenshot ####
+#### Deck Instantiation Screenshot ####
 ![Instantiation Screenshot](/assets/instanceScreenshot.JPG)
 #### Shuffling Deck Screenshot ####
 ![Shuffling Screenshot](/assets/shufflingScreenshot.JPG)
