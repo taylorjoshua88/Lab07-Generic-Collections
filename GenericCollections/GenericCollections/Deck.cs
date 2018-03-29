@@ -8,8 +8,7 @@ namespace GenericCollections
     /// <summary>
     /// Generic collection holding values of type T. The capacity
     /// of this collection will expand and shrink as its length
-    /// surpasses capacity or is reduced below a critical value
-    /// associated with ResizeFactor.
+    /// surpasses capacity or is reduced below one third its capacity
     /// </summary>
     /// <typeparam name="T">The type of items that can be held
     /// by this collection</typeparam>
@@ -27,40 +26,14 @@ namespace GenericCollections
         /// The capacity of this collection's internal array
         /// for items. Increasing the collection's length past
         /// this value will cause the collection's internal array
-        /// to expand by a factor of ResizeFactor. Decreasing the
-        /// collection's Length to a value less than 
-        /// Capacity / (2 * ResizeFactor) will result in the Capacity
-        /// being reduced to Capacity / ResizeFactor
+        /// capacity to double in size. Decreasing the collection's
+        /// Length to a value less than one third of Capacity
+        /// will result in the internal array's capacity being
+        /// shrunk in size by one half
         /// </summary>
         public int Capacity {
             get {
                 return items.Length;
-            }
-        }
-
-        // Backing store for ResizeFactor property
-        private int _resizeFactor = 2;
-
-        /// <summary>
-        /// The factor by which this collection's capacity expands
-        /// and shrinks in response to items being removed or added
-        /// to the collection. ResizeFactor must be greater than 1.
-        /// </summary>
-        public int ResizeFactor {
-            get {
-                return _resizeFactor;
-            }
-            set {
-                // Prevents the entire collection being dropped when Expand() and
-                // Shrink() are called, negative Capacity values, or the inability
-                // for the collection's Capacity to be resized with values of 1
-                if (_resizeFactor <= 1)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        "ResizeFactor must be greater than 1", nameof(value));
-                }
-
-                _resizeFactor = value;
             }
         }
 
@@ -79,12 +52,29 @@ namespace GenericCollections
         }
 
         /// <summary>
-        /// Expands the Capacity (items.Length) of the collection by
-        /// multiplying its current Capacity by ResizeFactor
+        /// Returns the item held at the specified index
         /// </summary>
-        private void Expand(int factor = 2)
+        /// <param name="index">The zero-based index of the item to return</param>
+        /// <returns>The item of type <typeparamref name="T"/> at
+        /// <paramref name="index"/></returns>
+        public T GetItem(int index)
         {
-            T[] expandedItemsArray = new T[Capacity * factor];
+            if (index >= Length)
+            {
+                throw new ArgumentOutOfRangeException("Attempted to " +
+                    "access an index beyond the Length of this Deck", nameof(index));
+            }
+
+            return items[index];
+        }
+
+        /// <summary>
+        /// Expands the Capacity (items.Length) of the collection by
+        /// multiplying its current capacity by 2
+        /// </summary>
+        private void Expand()
+        {
+            T[] expandedItemsArray = new T[Capacity * 2];
 
             /*
              *  NOTE(taylorjoshua88):
@@ -101,21 +91,21 @@ namespace GenericCollections
         }
 
         /// <summary>
-        /// Shrinks the collection by dividing its Capacity (items.Length)
-        /// by ResizeFactor
+        /// Shrinks the collection by dividing its capacity by 2
+        /// 
         /// </summary>
-        /// <exception cref="ArgumentException">An attempt was made to destructively
+        /// <exception cref="ApplicationException">An attempt was made to destructively
         /// shrink Capacity below Length, which would result in a loss of data</exception>"
-        private void Shrink(int divisor = 2)
+        private void Shrink()
         {
-            int newCapacity = Capacity / divisor;
+            int newCapacity = Capacity / 2;
 
             // Prevent shrinking of the array that would result in items being lost
             // from the collection
             if (newCapacity < Length)
             {
-                throw new ArgumentException("Attempt to destructively shrink Capacity " +
-                    "below the Length of items within the Deck collection", nameof(divisor));
+                throw new ApplicationException("Attempt to destructively shrink Capacity " +
+                    "below the Length of items within the Deck collection");
             }
 
             T[] shrunkItemsArray = new T[newCapacity];
@@ -126,7 +116,7 @@ namespace GenericCollections
              *    CopyTo to perform this operation rather than iterating
              *    over the entire array copying into a temporary array.
             */
-            for (int itemIdx = 0; itemIdx < Capacity; itemIdx++)
+            for (int itemIdx = 0; itemIdx < Length; itemIdx++)
             {
                 shrunkItemsArray[itemIdx] = items[itemIdx];
             }
@@ -175,8 +165,8 @@ namespace GenericCollections
         /// Finds the item <paramref name="itemToRemove"/> and removes
         /// it from the collection by shifting all items after it up
         /// by one index and reducing Length by one. If the new Length
-        /// is less than Capacity / (2 * ResizeFactor), then Capacity
-        /// will be modified to Capacity / ResizeFactor
+        /// is less than one third of its capacity, then the capacity
+        /// will be shrunk in half
         /// </summary>
         /// <param name="itemToRemove">The item to be removed from the
         /// collection</param>
@@ -208,11 +198,9 @@ namespace GenericCollections
                 items[curItemIdx - 1] = items[curItemIdx];
             }
 
-            // If our new Length is less than Capacity / (2 * ResizeFactor) then
-            // shrink our Capacity to Capacity / ResizeFactor. Making this condition
-            // triggered by Capacity / (2 * ResizeFactor) will help prevent Capacity
-            // being thrashed around if adding and removing items at a critical value
-            if (--Length < Capacity / (2 * ResizeFactor))
+            // If our new Length is less than a third of Capacity, then trigger
+            // a shrinking of the items array (by one half)
+            if (--Length < Capacity / 3)
             {
                 Shrink();
             }
