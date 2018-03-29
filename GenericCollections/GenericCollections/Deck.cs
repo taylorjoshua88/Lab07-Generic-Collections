@@ -12,7 +12,7 @@ namespace GenericCollections
     /// </summary>
     /// <typeparam name="T">The type of items that can be held
     /// by this collection</typeparam>
-    public class Deck<T> : IEnumerable
+    public class Deck<T> : IEnumerable<T>
     {
         // Backing array storage for the Deck collection's items
         private T[] items;
