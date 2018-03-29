@@ -1,78 +1,105 @@
-![cf](http://i.imgur.com/7v5ASc8.png) Lab 7 : Collections
-=====================================
+# GenericCollections
 
-## To Submit this Assignment
-- fork this repository
-- create a new branch named `lab07-`; + `<your name>` **e.g.** `lab07-amanda`
-- write your code
-- push to your repository
-- submit a pull request to this repository
-- submit a link to your PR in canvas
-- Include a Readme.md (contents described below)
+**Author**: Joshua Taylor
+**Version**: 1.0.0
 
-## Directions
-Create a custom generic collection named `Deck<T>`.
-Your Generic collection should hold Cards. (You will need to create a custom Card class)<br />
-Your `Card.cs` should contain a proprty that has a type as an Enum of the different card suites (hearts, diamonds, spades, clubs)
-The methods within your Deck<T> class should contain at minimum:
-1. Add
-2. Remove
-3. Shuffle
-	- The shuffle logic will randomize the index of each of the items in the generic Deck<T> object
+## Overview
 
+GenericCollections demonstrates the creation of a generic collection class. Our
+demo collection represents a deck of cards, and it is able to double its
+internal array's capacity as new cards are added past its initial capacity.
+Similarly, the Deck collection will automatically shrink its internal array's
+capacity when cards are removed to the point that there are fewer cards than
+one third of the internal array's capacity.
 
-Your `Program.cs` Main method should demonstrate:
-1. the instantiation of the generic collection. 
-2. the instantiation of at least 15 cards with values
-3. Adding and removing cards frm the Deck<T>
-4. Proof that the shuffling method workds 
-	- Have a method in your `Program` class named `Deal()` that brings in the Deck<T>. ouput the cards, shuffle, then output the cards again. 
-5. Use a Foreach loop on your created Deck, and output each of the cards to the console. 
+Additionally, Deck collections can be shuffled randomly in their ordering.
+Note that as generic collections, Deck objects can hold types other than Deck
+by providing a different type when they are being declared and initialized.
+Value and reference types are supported.
 
-Unit tests are still required. 
+## Getting Started
 
+GenericCollections targets the .NET Core 2.0 platform. The .NET Core 2.0 SDK can
+be downloaded from the following URL for Windows, Linux, and macOS:
 
+https://www.microsoft.com/net/download/
 
-## Stretch (3pts)
-- Manually implement the array removal and array add method. 
+The dotnet CLI utility would then be used to build and run the application:
 
-## ReadMe
-A README is a module consumer's first -- and maybe only -- look into your creation. The consumer wants a module to fulfill their need, so you must explain exactly what need your module fills, and how effectively it does so.
-<br />
-Your job is to
+    cd GenericCollections
+    dotnet build
+    dotnet run
 
-1. tell them what it is (with context)
-2. show them what it looks like in action
-3. show them how they use it
-4. tell them any other relevant details
+Additionally, users can build, run, and perform unit testing using Visual
+Studio 2017 or greater by opening the solution file at the root of this
+repository. All testing is performed using [xUnit](https://xunit.github.io/),
+which is included in the test project as a NuGet dependency.
 
-<br />
+## Example
 
-This is ***your*** job. It's up to the module creator to prove that their work is a shining gem in the sea of slipshod modules. Since so many developers' eyes will find their way to your README before anything else, quality here is your public-facing measure of your work.
+#### Interface Demonstration Screenshot ####
+![Instantiation Screenshot](/assets/instanceScreenshot.JPG)
+#### Shuffling Deck Screenshot ####
+![Shuffling Screenshot](/assets/shufflingScreenshot.JPG)
 
-<br /> <br /> Refer to the sample-README in the class repo for an example. 
-- [Reference](https://github.com/noffle/art-of-readme)
+## Architecture
 
+GenericCollections is composed of two classes, Deck<T> and Card. The generic
+collection being demonstrated is Deck<T> with Card acting as an example of
+reference type data to be added, removed, and shuffled within the Deck<T>
+collection.
 
-## Rubric
-- 7pts: Program meets all requirements described in Lab directions
+### Deck<T>
 
-	Points  | Reasoning | 
-	 ------------ | :-----------: | 
-	7       | Program runs as expected, no exceptions during execution |
-	5       | Program runs/compiles, Program contains logic/process errors|
-	4       | Program runs/compiles, but throws exceptions during execution |
-	2       | Missing tests // tests are not passing // not enough valid tests |
-	2       | Missing Readme Document // Readme Document does not meet standards |
-	0       | Program does not compile/run. Build Errors. |
-	0       | No Submission |
+Deck<T> is a generic collection based on an array with a default capacity
+of 10. This initial capacity can be changed by passing an argument to the
+Deck<T> constructor to be prevent unnecessary resizing of the internal
+array when the caller has some idea of the amount of data Deck<T> should hold
+ahead of time.
 
-- 3pts: Code meets industry standards
-	- These points are only awardable if you score at minimum a 5/7 on above criteria
+Deck<T> provides a Length property which contains a running count of the
+number of items which has been added to the collection. In addition, a
+Capacity property returns the length of the internal array used by this
+collection and represents the number of items that can be added to the
+collection before the internal array must be doubled in capacity.
 
-	Points  | Reasoning | 
-	 ------------ | :-----------: | 
-	3       | Code meets Industry Standards // methods and variables namings are appropriate // Selective and iterative statements are used appropriately, Fundamentals are propertly executed // Clearly and cleanly commented |
-	2       | syntax for naming conventions are not correct (camelCasing and PascalCasing are used appropriately) // slight errors in use of fundamentals // Missing some comments |
-	1       | Inappropriate naming conventions, and/or inappropriate use of fundamentals // Code is not commented  |
-	0       | No Submission or incomplete submission |
+Adding items will automatically trigger a doubling of the internal array's
+capacity when attempting to insert items past the current capacity of the
+internal array. Item removal that would cause the length of the collection
+to be less than one third of the internal array's capacity will automatically
+trigger a halving of the internal array's capacity.
+
+Deck implements the generic GetEnumerator() method and the IEnumerable<T>
+interface, providing the capability to use collection initialization and
+foreach loops with the Deck class.
+
+### Card
+
+Card represents a single playing card from the standard 52-card French playing
+card deck (minus the Joker cards). The card's suit is stored as a byte-based
+enumeration with values 0 - 3 represented by the labels Clubs, Spades, Hearts,
+and Diamonds (respectively). The card's rank is also representing by a
+byte-based enumeration with labels Ace, Two, Three, Four, Five, Six, Seven,
+Eight, Nine, Ten, Jack, Queen, and King representing values 1-13.
+
+Card implements the IEquatable<Card> interface allowing the use of Card.Equals()
+to compare Card objects by value and to create hashes.
+
+### Data Model
+
+All data is stored in memory on the heap by instantiating classes using the
+*new* keyword and by storing references through interfaces. Deck<T> collections
+store items inside of an internally-managed array of type T. No data persistence is supported by this application.
+
+### Command Line Interface (CLI)
+
+GenericCollections uses a command line interface to demonstrate the
+instantiation of Deck<T> collections, adding items to the collection, removing
+items from the collection, and shuffling the items' ordering within the
+collection. Simple Console.ReadKey() calls provide pauses throughout the
+demonstration to provide the user with a chance to read the program's output.
+
+## Change Log
+
+* 3.28.2018 [Joshua Taylor](mailto:taylor.joshua88@gmail.com) - Initial
+release. All tests are passing.
